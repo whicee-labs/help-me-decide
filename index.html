@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="theme-color" content="#f8f7f3">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <title>Decide for Me</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8f7f3;
+      color: #222;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 35px 20px 60px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+      font-size: 32px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #777;
+      margin-top: 0;
+      margin-bottom: 35px;
+    }
+
+    .categories {
+      display: grid;
+      gap: 12px;
+    }
+
+    .category {
+      width: 100%;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 16px;
+      padding: 18px;
+      font-size: 18px;
+      text-align: left;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .category:active {
+      transform: scale(0.98);
+    }
+
+    .category.active {
+      border: 2px solid #222;
+    }
+
+    .decision-area {
+      margin-top: 30px;
+      background: white;
+      border-radius: 20px;
+      padding: 28px 20px;
+      text-align: center;
+      min-height: 220px;
+    }
+
+    #category-title {
+      color: #777;
+      font-size: 15px;
+    }
+
+    #result {
+      font-size: 29px;
+      font-weight: 700;
+      min-height: 80px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 15px 5px;
+    }
+
+    #decide-button {
+      width: 100%;
+      border: none;
+      border-radius: 15px;
+
+      background: #222;
+      color: white;
+
+      padding: 16px;
+      font-size: 19px;
+      font-weight: 600;
+
+      cursor: pointer;
+    }
+
+    #decide-button:active {
+      transform: scale(0.98);
+    }
+
+    .reroll {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #999;
+    }
+  </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+  <h1>🎲 Decide for Me</h1>
+  <p class="subtitle">I don't want to think about it.</p>
+
+
+  <div class="categories">
+
+    <button class="category active" data-category="cuisine">
+      🍜 Random Cuisine
+    </button>
+
+    <button class="category" data-category="homeMeal">
+      🏠 What Should I Eat at Home?
+    </button>
+
+    <button class="category" data-category="shopping">
+      🛍️ Shopping Idea
+    </button>
+
+  </div>
+
+
+  <div class="decision-area">
+
+    <div id="category-title">
+      🍜 Random Cuisine
+    </div>
+
+    <div id="result">
+      🤔
+    </div>
+
+    <button id="decide-button">
+      🎲 Decide for Me
+    </button>
+
+    <div class="reroll">
+      Don't like it? Just roll again.
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  // -----------------------------
+  // EDIT YOUR OPTIONS HERE
+  // -----------------------------
+
+  const decisions = {
+
+    cuisine: [
+      "Japanese 🍣",
+      "Korean 🇰🇷",
+      "Thai 🌶️",
+      "Chinese 🥟",
+      "Chicken Rice 🍗",
+      "Noodles 🍜",
+      "Salad / Healthy Bowl 🥗",
+      "Western 🍝"
+    ],
+
+
+    homeMeal: [
+
+      "Cereal + Milk 🥣",
+
+      "Banana + Yogurt 🍌",
+
+      "Banana + Coffee ☕",
+
+      "Eggs + Cut Fruit 🥚🍎",
+
+      "Oven-Baked Fish 🐟",
+
+      "Oven Fish + Vegetables 🐟🥦",
+
+      "Konjac Noodles + Egg 🍜🥚",
+
+      "Konjac Noodles + Vegetables 🍜🥬",
+
+      "Chicken Breast + Vegetables 🍗🥦",
+
+      "Sweet Potato + Egg 🍠🥚",
+
+      "Corn + Egg 🌽🥚",
+
+      "Cut Vegetables + Fruit 🥒🍓",
+
+      "Yogurt + Fruit 🥣🍓",
+
+      "Fruit + Small Bowl of Cereal 🍌🥣",
+
+      "Keep It Simple: Banana + Egg 🍌🥚"
+    ],
+
+
+    shopping: [
+
+      "👗 Look at Clothes",
+
+      "👜 Look at Bags / Accessories",
+
+      "💄 Beauty / Skincare",
+
+      "🏠 Something Nice for Home",
+
+      "💎 Jewelry / Accessories",
+
+      "☕ Small Treat for Yourself",
+
+      "📱 Useful Gadget",
+
+      "💰 Don't Buy Anything Today"
+    ]
+
+  };
+
+
+  const categoryNames = {
+    cuisine: "🍜 Random Cuisine",
+    homeMeal: "🏠 What Should I Eat at Home?",
+    shopping: "🛍️ Shopping Idea"
+  };
+
+
+  let currentCategory = "cuisine";
+  let previousChoice = null;
+
+
+  const result = document.getElementById("result");
+  const title = document.getElementById("category-title");
+  const decideButton = document.getElementById("decide-button");
+  const categoryButtons = document.querySelectorAll(".category");
+
+
+  // -----------------------------
+  // CATEGORY SELECTION
+  // -----------------------------
+
+  categoryButtons.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+      currentCategory = button.dataset.category;
+
+      categoryButtons.forEach(btn => {
+        btn.classList.remove("active");
+      });
+
+      button.classList.add("active");
+
+      title.textContent = categoryNames[currentCategory];
+
+      result.textContent = "🤔";
+
+      previousChoice = null;
+
+    });
+
+  });
+
+
+  // -----------------------------
+  // RANDOM DECISION
+  // -----------------------------
+
+  decideButton.addEventListener("click", () => {
+
+    const options = decisions[currentCategory];
+
+    let choice;
+
+
+    // Try not to give the exact same answer
+    // twice in a row
+    if (options.length > 1) {
+
+      do {
+
+        choice =
+          options[
+            Math.floor(Math.random() * options.length)
+          ];
+
+      } while (choice === previousChoice);
+
+    } else {
+
+      choice = options[0];
+
+    }
+
+
+    previousChoice = choice;
+
+
+    // Tiny suspense effect
+
+    result.textContent = "🎲 ...";
+
+
+    setTimeout(() => {
+
+      result.textContent = choice;
+
+    }, 250);
+
+  });
+
+</script>
+
+</body>
+</html>
